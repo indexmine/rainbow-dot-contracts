@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/index-mine/rainbow-dot-contracts.git"
+    "url": "git+https://github.com/indexmine/rainbow-dot-contracts.git"
   },
   "keywords": [
     "indexmine",
@@ -24,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/index-mine/rainbow-dot-contracts/issues"
   },
-  "homepage": "https://github.com/index-mine/rainbow-dot-contracts#readme"
+  "homepage": "https://github.com/index-mine/rainbow-dot-contracts#readme",
+  "devDependencies": {
+    "solidity-docgen": "^0.1.0",
+    "truffle": "^4.1.14"
+  },
+  "dependencies": {}
 }
