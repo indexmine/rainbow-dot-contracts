@@ -1,0 +1,28 @@
+{
+  "name": "rainbow-dot-contracts",
+  "version": "0.0.0",
+  "description": "Smart contracts and demo application for rainbow dot",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "./scripts/test.sh",
+    "start": "./scripts/start.sh "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/index-mine/rainbow-dot-contracts.git"
+  },
+  "keywords": [
+    "indexmine",
+    "rainbow dot",
+    "forecast"
+  ],
+  "author": "Indexmine",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/index-mine/rainbow-dot-contracts/issues"
+  },
+  "homepage": "https://github.com/index-mine/rainbow-dot-contracts#readme"
+}
