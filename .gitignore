@@ -1,3 +1,6 @@
+# IDE
+.idea/
+
 # truffle
 build/*
 build_webpack/*
