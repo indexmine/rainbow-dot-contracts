@@ -7,7 +7,7 @@ const League  = artifacts.require("League");
 const Season  = artifacts.require("Season");
 
 contract('League', function([_, deployer, owner]) {
-    context('When it is deployed by an EOA' , async() => {
+    context('When a League contract is deployed by an EOA' , async() => {
         let league;
         let genesisSeason;
         const LEAGUE_NAME = 'Rainbow Dot League';
@@ -17,7 +17,7 @@ contract('League', function([_, deployer, owner]) {
             assert.equal(owner, await league.owner());
         });
 
-        it('should receive a string variable and store the value as its name', async()=> {
+        it('should receive a string value and store it as its name', async()=> {
             assert.equal(LEAGUE_NAME, await league.name());
         });
 
