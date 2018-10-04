@@ -23,9 +23,9 @@ contract('League', function ([_, deployer, owner, participant, helper]) {
         let league;
         const LEAGUE_NAME = 'Rainbow Dot League';
         describe('constructor()', async () => {
-            it('should assign the EOA as its owner', async () => {
+            it('should assign the EOA as its primary', async () => {
                 league = await League.new(LEAGUE_NAME, {from: owner});
-                assert.equal(owner, await league.owner());
+                assert.equal(owner, await league.primary());
             });
 
             it('should receive a string value and store it as its name', async () => {
@@ -39,11 +39,11 @@ contract('League', function ([_, deployer, owner, participant, helper]) {
         const deployLeague = async () => {
             league = await League.new(LEAGUE_NAME, {from: owner});
         };
-        describe('newSeason()', async () => {
+        describe('prepare()', async () => {
             before(deployLeague);
-            it('should revert when an EOA who is not an owner tries to start a new season', async () => {
+            it('should revert when an EOA who is not a primary tries to start a new season', async () => {
                 try {
-                    await league.newSeason.call({from: participant});
+                    await league.prepare.call({from: participant});
                     assert.fail('did not reverted');
                 } catch (error) {
                     assert.ok('reverted successfully');
@@ -51,19 +51,27 @@ contract('League', function ([_, deployer, owner, participant, helper]) {
             });
 
             let season;
-            it('should deploy a new season contract by an external call only from the owner', async () => {
-                season = await league.newSeason.call({from: owner});
+            it('should deploy a new season contract by an external call only from the primary', async () => {
+                season = await league.prepare.call({from: owner});
                 assert.ok(season);
                 assert.notEqual(season, EMPTY_ADDRESS);
             });
         });
 
-        describe('kickOffSeason(address _season)', async () => {
+        describe('sponsor', async()=>{
+          // conditions: reward, advertisement, period
+        });
+
+        describe('participate', async()=>{
+            // conditions: grade
+        });
+
+        describe('kickOff(address _season)', async () => {
             before(deployLeague);
             it('should revert when the passed season does not have READY status', async () => {
-                const unreadySeason = await league.newSeason.call({from: owner});
+                const unreadySeason = await league.prepare.call({from: owner});
                 try {
-                    await league.kickOffSeason(unreadySeason, {from: owner});
+                    await league.kickOff(unreadySeason, {from: owner});
                     assert.fail('did not reverted');
                 } catch (error) {
                     assert.ok('reverted successfully');
@@ -73,31 +81,31 @@ contract('League', function ([_, deployer, owner, participant, helper]) {
             context('if the passed argument indicates Season contract and has READY status', async () => {
                 let candidateAddress;
                 before(async () => {
-                    candidateAddress = await league.newSeason.call({from: owner});
-                    next();
+                    await league.prepare({from: owner});
+                    let seasons = await league.seasons();
+                    candidateAddress = seasons[0];
                     const candidate = await Season.at(candidateAddress);
-                    candidate.ready.call({from: owner});
+                    // candidate.ready.call({from: owner});
                 });
 
                 it('should start a season and assign it as its current season', async () => {
-                    await league.kickOffSeason(candidateAddress, {from: owner});
-                    next();
-                    assert.equal(candidateAddress, await league.currentSeason());
+                    // await league.kickOff(candidateAddress, {from: owner});
+                    // assert.equal(candidateAddress, await league.currentSeason());
                 });
 
                 it('should revert when the current season already exists', async () => {
-                    const preassignedAddress = await league.newSeason.call({from: owner});
-                    const preassigned = await Season.at(preassignedAddress);
-                    preassigned.ready.call({from: owner});
-                    await league.kickOffSeason(preassignedAddress, {from: owner});
-                    next();
-                    assert.notEqual(await league.currentSeason(), EMPTY_ADDRESS, 'current season does not exist');
-                    try {
-                        await league.kickOffSeason(candidateAddress, {from: owner});
-                        assert.fail('did not reverted');
-                    } catch (error) {
-                        assert.ok('reverted successfully');
-                    }
+                    await league.prepare({from: owner});
+                    let seasons = await league.seasons();
+                    const preassigned = await Season.at(seasons[0]);
+                    // preassigned.ready.call({from: owner});
+                    // await league.kickOff(preassignedAddress, {from: owner});
+                    // assert.notEqual(await league.currentSeason(), EMPTY_ADDRESS, 'current season does not exist');
+                    // try {
+                    //     await league.kickOff(candidateAddress, {from: owner});
+                    //     assert.fail('did not reverted');
+                    // } catch (error) {
+                    //     assert.ok('reverted successfully');
+                    // }
                 });
             });
         });

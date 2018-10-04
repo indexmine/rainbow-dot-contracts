@@ -1,26 +1,26 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Secondary.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Season.sol";
 
-contract League is Ownable {
+contract League is Secondary {
     string public name;
     address public currentSeason;
     address[] public seasons;
     address[] public pastSeasons;
 
-    constructor(string _name) Ownable() public {
+    constructor(string _name) Secondary() public {
         name = _name;
     }
 
-    function newSeason() public onlyOwner returns (address) {
+    function prepare() public onlyPrimary returns (address) {
         Season season = new Season();
         seasons.push(season);
-        return season;
+        return address(season);
     }
 
-    function kickOffSeason(address _season) public onlyOwner returns (address) {
+    function kickOff(address _season) public onlyPrimary returns (address) {
         require(
             Season(_season).status() == Season.SeasonStatus.READY,
             "_season argument should indicates a Season contract and it must have READY status"
@@ -37,7 +37,7 @@ contract League is Ownable {
     /**
     * @dev It apply the result and archive it.
     */
-    function closeCurrentSeason() public onlyOwner returns (bool) {
+    function close() public onlyPrimary returns (bool) {
         require(
             Season(currentSeason).status() == Season.SeasonStatus.ON_RESULT,
             "You can close current season only when it has ON_RESULT status"
@@ -53,5 +53,8 @@ contract League is Ownable {
         //  Archive
         pastSeasons.push(currentSeason);
         currentSeason = address(0);
+    }
+    function seasons() public view returns (address[]) {
+        return seasons;
     }
 }

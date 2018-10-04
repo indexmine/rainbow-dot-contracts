@@ -1,12 +1,18 @@
-// const chai = require('chai');
-// const assert = chai.assert;
-// const BigNumber = web3.BigNumber;
-// const should = chai.use(require('chai-bignumber')(BigNumber)).should();
-//
+const chai = require('chai');
+const assert = chai.assert;
+const BigNumber = web3.BigNumber;
+const should = chai.use(require('chai-bignumber')(BigNumber)).should();
+
 // const League  = artifacts.require("League");
-// const Season  = artifacts.require("Season");
+const Season  = artifacts.require("Season");
 //
-// contract('Season', function([_, deployer, owner]) {
+contract('Season', function([_, deployer, owner]) {
+    it('test', async () => {
+        let season = await Season.new({from:owner});
+        console.log(season.address);
+        let deployedSeason = await Season.at(season.address);
+    })
+});
 //     context('When a Season contract is deployed by a League contract' , async() => {
 //         let league;
 //         let genesisSeason;

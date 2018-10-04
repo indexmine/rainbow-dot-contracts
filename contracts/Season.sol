@@ -1,10 +1,19 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "openzeppelin-solidity/contracts/ownership/Secondary.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./League.sol";
 
-contract Season is Ownable {
+contract Season is Secondary {
+
+    struct OracleCandidate {
+        address oracle;
+        address[] votes;
+    }
+
+    address[] public oracleCandidates;
+    mapping(address=>uint) voteStats;
+    mapping(address=>address) votes;
 
     enum SeasonStatus {OPENED, READY, ONGOING, ON_RESULT, CLOSED, FORCED_CLOSED}
 
@@ -12,16 +21,20 @@ contract Season is Ownable {
 
     SeasonStatus public status;
 
-    constructor() Ownable() public {
+    constructor() Secondary() public {
         _changeStatus(SeasonStatus.OPENED);
     }
 
-    function ready() public onlyOwner returns (bool) {
+//    function registerOracleCandidate(address _candidate) {
+//
+//    }
+
+    function ready() public onlyPrimary returns (bool) {
         require(status==SeasonStatus.OPENED);
         _changeStatus(SeasonStatus.READY);
     }
 
-    function start() public onlyOwner returns (bool) {
+    function start() public onlyPrimary returns (bool) {
         require(status==SeasonStatus.READY);
         _changeStatus(SeasonStatus.ONGOING);
     }
@@ -33,12 +46,12 @@ contract Season is Ownable {
         }
     }
 
-    function close() public onlyOwner returns (bool) {
+    function close() public onlyPrimary returns (bool) {
         require(status==SeasonStatus.ON_RESULT);
         _changeStatus(SeasonStatus.CLOSED);
     }
 
-    function forceClose() public onlyOwner returns (bool) {
+    function forceClose() public onlyPrimary returns (bool) {
         require(status!=SeasonStatus.CLOSED);
         _changeStatus(SeasonStatus.FORCED_CLOSED);
     }
