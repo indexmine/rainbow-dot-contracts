@@ -13,7 +13,7 @@ contract Oracle is Secondary {
         return primary() == toEthSignedMessageHash(keccak256(data)).recover(_signature);
     }
 
-    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
+    function toEthSignedMessageHash(bytes32 hash) private pure returns (bytes32) {
         return hash.toEthSignedMessageHash();
     }
 }
