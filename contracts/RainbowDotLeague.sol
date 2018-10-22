@@ -3,6 +3,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Secondary.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Oracle.sol";
+import "./RainbowDot.sol";
 import {Season, Forecast} from "./Types.sol";
 
 contract RainbowDotLeague is Secondary {
@@ -13,6 +14,7 @@ contract RainbowDotLeague is Secondary {
     uint256 constant MINIMUM_PERIODS_OF_SEASON = 100;
 
     Oracle public oracle;
+    string description;
     address rainbowDot;
     function(address, uint256) external takeRDot;
     function(address[] memory, int256[] memory) external onResult;
@@ -24,13 +26,15 @@ contract RainbowDotLeague is Secondary {
         _;
     }
 
-    constructor (address _oracle) public Secondary() {
+    constructor (address _oracle, string _description) public Secondary() {
         oracle = Oracle(_oracle);
+        description = _description;
     }
 
     function register(address _rainbowDot) public onlyPrimary {
         require(address(rainbowDot) == address(0));
         rainbowDot = _rainbowDot;
+        RainbowDot(rainbowDot).requestLeagueRegistration(address(this), description);
     }
 
     function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) onlyRainbowDot {
