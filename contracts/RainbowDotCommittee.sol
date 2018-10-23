@@ -2,8 +2,9 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/ownership/Secondary.sol";
 
-contract RainbowDotCommittee {
+contract RainbowDotCommittee is Secondary {
     using Roles for Roles.Role;
     using SafeMath for uint256;
 
@@ -31,15 +32,15 @@ contract RainbowDotCommittee {
     //    mapping(address => LeagueApplication) leagueApplications;
     Agenda[] private agendas;
     Roles.Role private members;
-    uint256 memberSize = 0;
+    uint256 public memberSize = 0;
 
     event NewNomination(address);
     event OnNominationResult(address, bool);
 
     //    event NewLeagueApplication(address);
-    event NewAgenda(uint256);
+    event NewAgenda(uint256 agendaId);
     //    event OnApplicationResult(address, bool);
-    event OnResult(uint256, bool); // agenda id
+    event OnResult(uint256 agendaId, bool result); // agenda id
 
     modifier onlyForMembers {
         require(members.has(msg.sender));
@@ -53,7 +54,7 @@ contract RainbowDotCommittee {
         }
     }
 
-    function submitAgenda(string _description, function(uint256, bool) external _callback) public returns (uint256) {
+    function submitAgenda(string _description, function(uint256, bool) external _callback) public onlyPrimary returns (uint256) {
         Agenda memory agenda;
         agenda.description = _description;
         agenda.callback = _callback;
@@ -63,7 +64,7 @@ contract RainbowDotCommittee {
         return agendas.length - 1;
     }
 
-    function nominate(address _member) public {
+    function nominate(address _member) public onlyForMembers {
         Nomination memory nomination;
         nomination.member = _member;
         nominations[_member] = nomination;
@@ -84,6 +85,7 @@ contract RainbowDotCommittee {
             (agenda.votes.resolved, agenda.votes.result) = agenda.resolver(agenda.votes);
             if (agenda.votes.resolved) {
                 agenda.callback(_agendaId, agenda.votes.result);
+                emit OnResult(_agendaId, agenda.votes.result);
             }
         }
     }
