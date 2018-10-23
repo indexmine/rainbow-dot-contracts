@@ -12,7 +12,7 @@ contract RainbowDot {
     mapping(uint256 => address) private registrationRequests;
     Roles.Role private leagues;
     RainbowDotAccount private accounts;
-    RainbowDotCommittee private committee;
+    RainbowDotCommittee public committee;
 
     modifier onlyForLeagues {
         require(leagues.has(msg.sender));
@@ -48,6 +48,10 @@ contract RainbowDot {
     function applyResult(address[] users, int256[] scores) public onlyForLeagues {
         // update rScores
         // update grades
+    }
+
+    function isApprovedLeague(address _league) public view returns (bool) {
+        return leagues.has(_league);
     }
 
     function _handleAgendaResult(uint256 _agendaId, bool _result) public onlyForCommittee {
