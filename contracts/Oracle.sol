@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 contract Oracle is Secondary {
     using ECDSA for bytes32;
 
-    constructor() Secondary() public {
+    constructor() public Secondary() {
     }
 
     function isVerified(bytes data, bytes _signature) public view returns (bool) {
