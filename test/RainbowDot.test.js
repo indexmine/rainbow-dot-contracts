@@ -2,8 +2,6 @@ const chai = require('chai')
 const assert = chai.assert
 const BigNumber = web3.BigNumber
 const should = chai.use(require('chai-bignumber')(BigNumber)).should()
-const Web3latest = require('web3')
-const web3latest = new Web3latest()
 
 const RainbowDotCommittee = artifacts.require('RainbowDotCommittee')
 const RainbowDotLeague = artifacts.require('RainbowDotLeague')
