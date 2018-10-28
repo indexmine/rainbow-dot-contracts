@@ -11,6 +11,7 @@ contract RainbowDotAccount is DateTime, Secondary {
     enum Grade {PURPLE, NAVY, BLUE, GREEN, YELLOW, ORANGE, RED}
 
     struct Account {
+        // TODO change rDots to RDOtProvider Contract (by Committee)
         uint256 rDots;
         uint256 rScore;
         uint256 lastUse;

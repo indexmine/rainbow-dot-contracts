@@ -159,6 +159,7 @@ library Season {
                 bonus = 2;
             }
         }
+        //TODO option to use closing price
         return returnRate * bonus * int(_periods) * int(_rDots);
     }
 }

@@ -48,6 +48,9 @@ contract RainbowDot {
     function applyResult(address[] users, int256[] scores) public onlyForLeagues {
         // update rScores
         // update grades
+
+
+
     }
 
     function isApprovedLeague(address _league) public view returns (bool) {

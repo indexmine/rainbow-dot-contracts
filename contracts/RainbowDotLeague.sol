@@ -6,6 +6,7 @@ import "./Oracle.sol";
 import "./RainbowDot.sol";
 import {Season, Forecast} from "./Types.sol";
 
+// TODO add two types(minter league & sponsored league)
 contract RainbowDotLeague is Secondary {
     using SafeMath for uint256;
     using Forecast for Forecast.Object;
@@ -77,10 +78,12 @@ contract RainbowDotLeague is Secondary {
     }
 
     function openForecast(string _season, uint256 _rDots, uint256 _periods, uint256 _targetPrice) external returns (bytes32 forecastId) {
+        //TODO grade limit
         return _forecast(msg.sender, _season, _rDots, _periods, keccak256(abi.encodePacked(_targetPrice, uint256(0))), _targetPrice);
     }
 
     function sealedForecast(string _season, uint256 _rDots, uint256 _periods, bytes32 _targetPrice) external returns (bytes32 forecastId){
+        // TODO grade limit
         return _forecast(msg.sender, _season, _rDots, _periods, _targetPrice, 0);
     }
 
@@ -147,6 +150,7 @@ contract RainbowDotLeague is Secondary {
 
     function close(string _season) public {
         Season.Object storage season = seasons[_season];
+        // TODO penalties
         // Check initialization
         require(season.isInitialized());
 
@@ -154,5 +158,6 @@ contract RainbowDotLeague is Secondary {
         int256[] memory rScores;
         (users, rScores) = season.calculateResult();
         onResult(users, rScores);
+
     }
 }
