@@ -69,7 +69,8 @@
   "scripts": {
     "start": "node scripts/start.js",
     "build": "truffle compile && node scripts/build.js",
-    "test": "node scripts/test.js --env=jsdom",
+    "uitest": "node scripts/test.js --env=jsdom",
+    "test": "scripts/testContracts.sh",
     "chain": "ganache-cli",
     "prepare": "npm run build"
   },
