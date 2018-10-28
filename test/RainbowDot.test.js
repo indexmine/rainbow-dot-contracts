@@ -38,17 +38,14 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
       }
     )
     describe('submitAgenda()', async () => {
-      it('should be called only by the RainbowDot contract', async () => {
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda')
-      })
       it('should emit an event to notify a new agenda has been submitted and increment the agenda', async () => {
-        let agendaId = -1
+        let agendaId = 0
         committee.NewAgenda().watch((err, result) => {
           if (err) assert.fail()
           else {
             assert.equal(result.event, 'NewAgenda')
-            assert.equal(agendaId + 1, result.args.agendaId.toNumber())
-            agendaId = result.args.agendaId.toNumber()
+            assert.equal(agendaId, result.args.agendaId.toNumber())
+            agendaId++
           }
         })
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 1')
