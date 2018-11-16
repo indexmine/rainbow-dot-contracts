@@ -34,9 +34,24 @@ contract RainbowDotAccount is DateTime, Secondary {
 
     function useRDots(address _user, uint256 _rDots) public onlyPrimary {
         require(_rDots <= getAvailableRDots(_user));
-        Account memory account = accounts[_user];
+        Account storage account = accounts[_user];
+        require(_rDots <= uint256(account.grade).add(1));
         account.rDots = getAvailableRDots(_user) - _rDots;
         account.lastUse = now;
+    }
+
+    function updateScore(address[] _users, int256[] _scores) public onlyPrimary {
+        for (uint256 i = 0; i < _users.length; i++) {
+            if (_scores[i] > 0) {
+                accounts[_users[i]].rScore.add(_scores[i]);
+            } else {
+                accounts[_users[i]].rScore.sub(uint256(- _scores[i]));
+            }
+        }
+    }
+
+    function updateGrade() public onlyPrimary {
+
     }
 
     function exist(address _user) public view returns (bool) {

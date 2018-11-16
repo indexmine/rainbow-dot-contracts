@@ -23,7 +23,8 @@ contract RainbowDotCommittee is Secondary {
 
     struct Agenda {
         string description;
-        function(uint256, bool) external callback;
+        address target;
+        function(address, bool) external callback;
         function(Votes memory) internal view returns (bool, bool) resolver;
         Votes votes;
     }
@@ -54,9 +55,10 @@ contract RainbowDotCommittee is Secondary {
         }
     }
 
-    function submitAgenda(string _description, function(uint256, bool) external _callback) public onlyPrimary returns (uint256) {
+    function submitAgenda(string _description, address _target, function(address, bool) external _callback) public onlyPrimary returns (uint256) {
         Agenda memory agenda;
         agenda.description = _description;
+        agenda.target = _target;
         agenda.callback = _callback;
         agenda.resolver = _majorityVoting;
         agendas.push(agenda);
@@ -84,7 +86,7 @@ contract RainbowDotCommittee is Secondary {
         if (!agenda.votes.resolved) {
             (agenda.votes.resolved, agenda.votes.result) = agenda.resolver(agenda.votes);
             if (agenda.votes.resolved) {
-                agenda.callback(_agendaId, agenda.votes.result);
+                agenda.callback(agenda.target, agenda.votes.result);
                 emit OnResult(_agendaId, agenda.votes.result);
             }
         }

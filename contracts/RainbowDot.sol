@@ -4,15 +4,19 @@ import "openzeppelin-solidity/contracts/access/Roles.sol";
 import "./RainbowDotAccount.sol";
 import "./RainbowDotCommittee.sol";
 import "./RainbowDotLeague.sol";
+import {MinterLeague} from "./Types.sol";
+import "./InterpinesToken.sol";
+import "./RainbowDotAccount.sol";
 
 contract RainbowDot {
     using Roles for Roles.Role;
     using SafeMath for uint256;
 
-    mapping(uint256 => address) private registrationRequests;
     Roles.Role private leagues;
-    RainbowDotAccount private accounts;
+    InterpinesToken public interpines;
+    RainbowDotAccount public accounts;
     RainbowDotCommittee public committee;
+    Roles.Role minterLeagues;
 
     modifier onlyForLeagues {
         require(leagues.has(msg.sender));
@@ -48,11 +52,35 @@ contract RainbowDot {
         require(!leagues.has(_league));
         // Submit an agenda to the committee and get agenda id for the registration
         // Pass a callback function to hanlde the result
-        uint256 id = committee.submitAgenda(_description, this._handleAgendaResult);
-        // Does not allow duplicated registration
-        require(registrationRequests[id] == address(0));
-        // Store the agenda id and league information to use when it is approved
-        registrationRequests[id] = _league;
+        committee.submitAgenda(_description, _league, this._handleAgendaResult);
+    }
+
+    /**
+    * @dev A league can request a registration to the committee. If a new registration is submitted,
+    * the committee will review it and make a result with a majority voting.
+    */
+    function migrateAccountManager(address _accountManager, string _description) public {
+        // Revert when the address is a null address
+        require(_accountManager != address(0));
+        // Submit an agenda to the committee, passing a callback function to handle the result
+        committee.submitAgenda(_description, _accountManager, this._setAccountManager);
+    }
+
+    /**
+    * @dev Community can migrate the minter league to mint interpines token.
+    * @param _minterLeague It designate a RainbotDotLeague contract which inherits
+    * RainbowDotEndPriceLeague and implements MinterLeague(Types.sol)
+    */
+    function newMinterLeague(address _minterLeague, string _description) public {
+        // Revert when the address is a null address
+        require(_minterLeague != address(0));
+
+        // Do not submit agenda if it does not implement the MinterLeague
+        MinterLeague minterLeague = MinterLeague(_minterLeague);
+        require(minterLeague.mintPercentagePerSeason() > 0);
+
+        // Submit an agenda to the committee, passing a callback function to handle the result
+        committee.submitAgenda(_description, _minterLeague, this._setMinterLeague);
     }
 
     /**
@@ -66,9 +94,14 @@ contract RainbowDot {
      * @dev Approved leagues update rScores as a result
      */
     function applyResult(address[] users, int256[] scores) public onlyForLeagues {
-        // TODO mint interpines tokens
-        // update rScores
-        // update grades
+        address league = msg.sender;
+        // If minter league, mint new tokens
+        if (minterLeagues.has(league)) {
+            MinterLeague minterLeague = MinterLeague(league);
+            interpines.distribute(minterLeague.mintPercentagePerSeason(), users, scores);
+        }
+        accounts.updateScore(users, scores);
+        accounts.updateGrade();
     }
 
     /**
@@ -82,9 +115,7 @@ contract RainbowDot {
      * @dev This function is called when the committee returns a screening result for the registration.
      * And if it passes te screening, this gives permissions to take rDots and update rScores to the league.
      */
-    function _handleAgendaResult(uint256 _agendaId, bool _result) public onlyForCommittee {
-        // get league address for the given agenda
-        address _league = registrationRequests[_agendaId];
+    function _handleAgendaResult(address _league, bool _result) public onlyForCommittee {
         // check the league address is not the null account
         require(_league != address(0));
         // Apply result
@@ -94,6 +125,30 @@ contract RainbowDot {
             _disapproveLeague(_league);
         }
     }
+
+    /**
+    * @dev This function is called when the committee returns a result for the migrating account manager..
+    */
+    function _setAccountManager(address _accountManager, bool _result) public onlyForCommittee {
+        // check the account manager address is not the null account
+        require(_accountManager != address(0));
+        // Apply result
+    }
+
+    /**
+    * @dev This function is called when the committee returns a result for the migrating account manager..
+    */
+    function _setMinterLeague(address _league, bool _result) public onlyForCommittee {
+        // check the league address is not the null account
+        require(_league != address(0));
+        // Apply result
+        if (_result) {
+            minterLeagues.add(_league);
+        } else {
+            minterLeagues.remove(_league);
+        }
+    }
+
 
     /**
      * @dev This is a private function to set a league as an approved

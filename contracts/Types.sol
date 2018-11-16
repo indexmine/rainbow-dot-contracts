@@ -159,7 +159,14 @@ library Season {
                 bonus = 2;
             }
         }
-        //TODO option to use closing price
         return returnRate * bonus * int(_periods) * int(_rDots);
     }
+}
+
+library MinterLeague {
+    /**
+     * @dev It returns the amount of token to mint at once.
+     * RainbowDot mints new tokens when minter leagues return new season result
+     */
+    function mintPercentagePerSeason() public pure returns (uint256);
 }
