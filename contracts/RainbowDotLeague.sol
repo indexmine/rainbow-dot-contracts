@@ -62,6 +62,7 @@ contract RainbowDotLeague is Secondary {
         require(_finishTime > _startTime);
 
         // Seasons can not be overlapped
+        // TODO code
         if (seasonList.length > 0) {
             Season.Object storage lastSeason = seasons[seasonList[seasonList.length - 1]];
             require(lastSeason.finishTime > - _startTime);

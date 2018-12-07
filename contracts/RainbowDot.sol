@@ -101,7 +101,7 @@ contract RainbowDot {
             interpines.distribute(minterLeague.mintPercentagePerSeason(), users, scores);
         }
         accounts.updateScore(users, scores);
-        accounts.updateGrade();
+        accounts.updateGrade(); // TODO update by every Q
     }
 
     /**
