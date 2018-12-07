@@ -2,33 +2,23 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/access/Roles.sol";
-import "openzeppelin-solidity/contracts/ownership/Secondary.sol";
 import "ethereum-datetime/contracts/DateTime.sol";
+import "./interfaces/IRainbowDotAccount.sol";
 
-contract RainbowDotAccount is DateTime, Secondary {
+contract RainbowDotAccount is DateTime, IRainbowDotAccount {
     using Roles for Roles.Role;
     using SafeMath for uint256;
-    enum Grade {PURPLE, NAVY, BLUE, GREEN, YELLOW, ORANGE, RED}
-
-    struct Account {
-        // TODO change rDots to RDOtProvider Contract (by Committee)
-        uint256 rDots;
-        uint256 rScore;
-        uint256 lastUse;
-        Grade grade;
-    }
 
     uint256 constant public INITIAL_SUPPLY = 20;
     uint256 constant public MONTHLY_SUPPLY = 10;
-    Roles.Role private users;
-    mapping(address => Account) private accounts;
 
-    constructor () Secondary() {
+    constructor () public Secondary() {
     }
 
     function addUser(address _user) public onlyPrimary {
         require(!users.has(_user));
         users.add(_user);
+        userList.push(_user);
         accounts[_user] = Account(INITIAL_SUPPLY, 0, now, Grade.PURPLE);
     }
 
@@ -52,7 +42,7 @@ contract RainbowDotAccount is DateTime, Secondary {
     }
 
     function updateGrade() public onlyPrimary {
-
+        // TODO update by quarter
     }
 
     function exist(address _user) public view returns (bool) {

@@ -1,12 +1,12 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/access/Roles.sol";
-import "./RainbowDotAccount.sol";
 import "./RainbowDotCommittee.sol";
 import "./RainbowDotLeague.sol";
+import "./RainbowDotAccount.sol";
+import "./interfaces/IRainbowDotAccount.sol";
 import {MinterLeague} from "./Types.sol";
 import "./InterpinesToken.sol";
-import "./RainbowDotAccount.sol";
 
 contract RainbowDot {
     using Roles for Roles.Role;
@@ -14,7 +14,7 @@ contract RainbowDot {
 
     Roles.Role private leagues;
     InterpinesToken public interpines;
-    RainbowDotAccount public accounts;
+    IRainbowDotAccount public accounts;
     RainbowDotCommittee public committee;
     Roles.Role minterLeagues;
 
@@ -28,7 +28,7 @@ contract RainbowDot {
         _;
     }
 
-    constructor (address[] initialCommittee) {
+    constructor (address[] initialCommittee) public {
         // Deploy RainbowDot Account.
         // This RainbowDot contract will be the primary contract of the RainbowDotAccount contract.
         accounts = new RainbowDotAccount();
@@ -101,7 +101,7 @@ contract RainbowDot {
             interpines.distribute(minterLeague.mintPercentagePerSeason(), users, scores);
         }
         accounts.updateScore(users, scores);
-        accounts.updateGrade(); // TODO update by every Q
+        accounts.updateGrade();
     }
 
     /**
@@ -133,6 +133,10 @@ contract RainbowDot {
         // check the account manager address is not the null account
         require(_accountManager != address(0));
         // Apply result
+        if(_result) {
+            // change account manager
+            accounts = IRainbowDotAccount(_accountManager);
+        }
     }
 
     /**
