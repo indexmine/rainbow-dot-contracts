@@ -18,7 +18,7 @@ library Forecast {
         return (_object.hashedTargetPrice.length != 0);
     }
 
-    function commitValue(Object storage _object, uint256 _value, uint256 _nonce) internal {
+    function revealValue(Object storage _object, uint256 _value, uint256 _nonce) internal {
         require(keccak256(abi.encodePacked(_value, _nonce)) == _object.hashedTargetPrice);
         _object.targetPrice = _value;
     }

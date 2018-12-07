@@ -137,7 +137,7 @@ contract RainbowDotLeague is Secondary {
         require(season.isInitialized());
         require(season.forecasts[_forecastId].isInitialized());
         // Commit value
-        season.forecasts[_forecastId].commitValue(_value, _nonce);
+        season.forecasts[_forecastId].revealValue(_value, _nonce);
     }
 
     function submitData(string _season, uint256 _timestamp, uint256 _code, uint256 _value, bytes _signature) public {
