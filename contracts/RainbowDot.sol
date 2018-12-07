@@ -92,6 +92,7 @@ contract RainbowDot {
 
     /**
      * @dev Approved leagues update rScores as a result
+     // TODO should be redesigned (it may cause out of gas)
      */
     function applyResult(address[] users, int256[] scores) public onlyForLeagues {
         address league = msg.sender;
@@ -103,6 +104,11 @@ contract RainbowDot {
         accounts.updateScore(users, scores);
         accounts.updateGrade();
     }
+
+    function getAccounts() public view returns (IRainbowDotAccount) {
+        return accounts;
+    }
+
 
     /**
      * @dev Return the league is approved or not
@@ -133,7 +139,7 @@ contract RainbowDot {
         // check the account manager address is not the null account
         require(_accountManager != address(0));
         // Apply result
-        if(_result) {
+        if (_result) {
             // change account manager
             accounts = IRainbowDotAccount(_accountManager);
         }

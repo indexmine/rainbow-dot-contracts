@@ -12,37 +12,58 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
     uint256 constant public INITIAL_SUPPLY = 20;
     uint256 constant public MONTHLY_SUPPLY = 10;
 
+    uint256 private _startedTime;
+    uint256 private _lastSeasonNumber;
+    int256[] gradingStandards;
+
     constructor () public Secondary() {
+        _startedTime = now;
     }
 
     function addUser(address _user) public onlyPrimary {
         require(!users.has(_user));
         users.add(_user);
         userList.push(_user);
-        accounts[_user] = Account(INITIAL_SUPPLY, 0, now, Grade.PURPLE);
+        Account memory account;
+        account.rDots = INITIAL_SUPPLY;
+        account.lastUse = now;
+        accounts[_user] = account;
     }
 
     function useRDots(address _user, uint256 _rDots) public onlyPrimary {
         require(_rDots <= getAvailableRDots(_user));
         Account storage account = accounts[_user];
-        require(_rDots <= uint256(account.grade).add(1));
+        require(_rDots <= uint256(getGrade(_user)).add(1));
         account.rDots = getAvailableRDots(_user) - _rDots;
         account.lastUse = now;
     }
 
     function updateScore(address[] _users, int256[] _scores) public onlyPrimary {
         for (uint256 i = 0; i < _users.length; i++) {
+            // Check integer overflow
+            int256 currentValue = getCurrentSeasonScore(_users[i]);
             if (_scores[i] > 0) {
-                // because _scores[i] is greater than zero, it is safe to convert to uint256
-                accounts[_users[i]].rScore.add(uint256(_scores[i]));
+                require(currentValue + _scores[i] > _scores[i]);
             } else {
-                accounts[_users[i]].rScore.sub(uint256(- _scores[i]));
+                require(currentValue + _scores[i] < currentValue);
             }
+            // Update score
+            accounts[_users[i]].rScores[_getCurrentSeasonNumber()] = currentValue + _scores[i];
         }
     }
 
+    /**
+    * @dev On chain sorting can only cover about 300 of address.
+    */
     function updateGrade() public onlyPrimary {
-        // TODO update by quarter
+        // TODO We should use truebit to sort scores
+        // If the current season num is 3 and the last season num is 1,
+        // update grade information and the set last season to 2
+        if (_lastSeasonNumber + 1 < _getCurrentSeasonNumber()) {
+            //            gradingStandards = _gradingStandards;
+            // Set last season
+            _lastSeasonNumber = _getCurrentSeasonNumber() - 1;
+        }
     }
 
     function exist(address _user) public view returns (bool) {
@@ -51,16 +72,16 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
 
     function getAccount(address _user) public view returns (
         uint256 rDots,
-        uint256 rScore,
+        int256 rScore,
         uint256 lastUse,
         Grade grade)
     {
         require(!users.has(_user));
         Account memory account = accounts[_user];
         rDots = getAvailableRDots(_user);
-        rScore = account.rScore;
+        rScore = getCurrentSeasonScore(_user);
         lastUse = account.lastUse;
-        grade = account.grade;
+        grade = _calculateGrade(rScore);
     }
 
     function getAvailableRDots(address _user) public view returns (uint256) {
@@ -74,6 +95,19 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         }
     }
 
+    function getGrade(address _user) public view returns (Grade) {
+        return _calculateGrade(getCurrentSeasonScore(_user));
+    }
+
+    function getCurrentSeasonScore(address _user) public view returns (int256) {
+        accounts[_user].rScores[_getCurrentSeasonNumber()];
+    }
+
+    function getScoreOfSpecificSeason(address _user, uint256 _seasonNum) public view returns (int256) {
+        accounts[_user].rScores[_seasonNum];
+    }
+
+
     function _isOnSameMonth(
         uint256 _timestamp1,
         uint256 _timestamp2
@@ -81,5 +115,28 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         _DateTime memory dt1 = parseTimestamp(_timestamp1);
         _DateTime memory dt2 = parseTimestamp(_timestamp2);
         return (dt1.year == dt2.year && dt1.month == dt2.month);
+    }
+
+    function _getCurrentSeasonNumber() public view returns (uint256) {
+        // 90 days
+        return now.sub(_startedTime).div(7776000).add(1);
+    }
+
+    function _calculateGrade(int256 _rScore) private view returns (Grade) {
+        if (_rScore < gradingStandards[0]) {
+            return Grade.PURPLE;
+        } else if (_rScore < gradingStandards[1]) {
+            return Grade.NAVY;
+        } else if (_rScore < gradingStandards[2]) {
+            return Grade.BLUE;
+        } else if (_rScore < gradingStandards[3]) {
+            return Grade.GREEN;
+        } else if (_rScore < gradingStandards[4]) {
+            return Grade.ORANGE;
+        } else if (_rScore < gradingStandards[5]) {
+            return Grade.YELLOW;
+        } else {
+            return Grade.RED;
+        }
     }
 }

@@ -111,7 +111,6 @@ contract RainbowDotCommittee is Secondary {
                 } else {
                     _disapproveMember(_member);
                 }
-                // emit TODO
             }
         }
     }
