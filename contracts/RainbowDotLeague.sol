@@ -40,7 +40,7 @@ contract RainbowDotLeague is Secondary {
         rainbowDot.requestLeagueRegistration(address(this), description);
     }
 
-    function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) onlyRainbowDot {
+    function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) public onlyRainbowDot {
         takeRDot = _takeRDot;
         onResult = _onResult;
     }

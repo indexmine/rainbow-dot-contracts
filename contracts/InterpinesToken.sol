@@ -23,7 +23,7 @@ contract InterpinesToken is ERC20Mintable, ERC20Detailed {
         return 1;
     }
 
-    function distribute(uint256 _percentage, address[] _users, int256[] _scores) {
+    function distribute(uint256 _percentage, address[] _users, int256[] _scores) public onlyMinter {
         uint256 scoreSum = 0;
         // Get total sum of positive scores (dispense negative scores)
         for (uint i = 0; i < _scores.length; i ++) {
