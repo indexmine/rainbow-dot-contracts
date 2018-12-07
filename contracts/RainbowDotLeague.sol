@@ -6,7 +6,6 @@ import "./Oracle.sol";
 import "./RainbowDot.sol";
 import {Season, Forecast} from "./Types.sol";
 
-// TODO add two types(minter league & sponsored league)
 contract RainbowDotLeague is Secondary {
     using SafeMath for uint256;
     using Forecast for Forecast.Object;
@@ -16,14 +15,14 @@ contract RainbowDotLeague is Secondary {
 
     Oracle public oracle;
     string description;
-    address rainbowDot;
+    RainbowDot rainbowDot;
     function(address, uint256) external takeRDot;
     function(address[] memory, int256[] memory) external onResult;
     string[] seasonList;
     mapping(string => Season.Object) seasons;
 
     modifier onlyRainbowDot {
-        require(msg.sender == rainbowDot);
+        require(msg.sender == address(rainbowDot));
         _;
     }
 
@@ -33,9 +32,12 @@ contract RainbowDotLeague is Secondary {
     }
 
     function register(address _rainbowDot) public onlyPrimary {
+        // Should not be assigned before
         require(address(rainbowDot) == address(0));
-        rainbowDot = _rainbowDot;
-        RainbowDot(rainbowDot).requestLeagueRegistration(address(this), description);
+        // Assign
+        rainbowDot = RainbowDot(_rainbowDot);
+        // Submit agenda to get approval
+        rainbowDot.requestLeagueRegistration(address(this), description);
     }
 
     function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) onlyRainbowDot {
@@ -58,6 +60,13 @@ contract RainbowDotLeague is Secondary {
         // Creating a new season is only allowed for future forecasts.
         require(_startTime > now);
         require(_finishTime > _startTime);
+
+        // Seasons can not be overlapped
+        // TODO code
+        if (seasonList.length > 0) {
+            Season.Object storage lastSeason = seasons[seasonList[seasonList.length - 1]];
+            require(lastSeason.finishTime > - _startTime);
+        }
 
         // Frame uint should not be zero
         require(_secondsPerFrame != 0);
@@ -94,7 +103,7 @@ contract RainbowDotLeague is Secondary {
         uint256 _periods,
         bytes32 _hashedTargetPrice,
         uint256 _targetPrice
-    ) private returns (bytes32 forecastId) {
+    ) internal returns (bytes32 forecastId) {
         Season.Object storage season = seasons[_season];
         // Season should be initialized
         require(season.isInitialized());
@@ -122,7 +131,7 @@ contract RainbowDotLeague is Secondary {
         forecastId = season.addForecast(forecast);
     }
 
-    function commitValue(string _season, bytes32 _forecastId, uint256 _value, uint _nonce) external {
+    function revealForecast(string _season, bytes32 _forecastId, uint256 _value, uint _nonce) external {
         Season.Object storage season = seasons[_season];
         // Check initialization
         require(season.isInitialized());
@@ -131,7 +140,7 @@ contract RainbowDotLeague is Secondary {
         season.forecasts[_forecastId].commitValue(_value, _nonce);
     }
 
-    function commitData(string _season, uint256 _timestamp, uint256 _code, uint256 _value, bytes _signature) public {
+    function submitData(string _season, uint256 _timestamp, uint256 _code, uint256 _value, bytes _signature) public {
         Season.Object storage season = seasons[_season];
         // Check season data
         require(season.code == _code);
@@ -158,6 +167,5 @@ contract RainbowDotLeague is Secondary {
         int256[] memory rScores;
         (users, rScores) = season.calculateResult();
         onResult(users, rScores);
-
     }
 }
