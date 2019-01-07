@@ -11,7 +11,7 @@ contract RainbowDotLeague is Secondary {
     using Forecast for Forecast.Object;
     using Season for Season.Object;
 
-    uint256 constant MINIMUM_PERIODS_OF_SEASON = 100;
+    uint256 constant MINIMUM_PERIODS_OF_SEASON = 100; // temporal
 
     Oracle public oracle;
     string description;
@@ -65,7 +65,7 @@ contract RainbowDotLeague is Secondary {
         // TODO code
         if (seasonList.length > 0) {
             Season.Object storage lastSeason = seasons[seasonList[seasonList.length - 1]];
-            require(lastSeason.finishTime > - _startTime);
+            require(lastSeason.finishTime <= _startTime);
         }
 
         // Frame uint should not be zero
