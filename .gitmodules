@@ -1,3 +1,0 @@
-[submodule "libs/pipermerriam/ethereum-datetime"]
-	path = libs/pipermerriam/ethereum-datetime
-	url = https://github.com/pipermerriam/ethereum-datetime

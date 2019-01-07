@@ -19,16 +19,23 @@ contract InterpinesToken is ERC20Mintable, ERC20Detailed {
 
     function inflationUnit() public view returns (uint256) {
         // TODO fisher's equation
+        // temporal value
+        return 1;
     }
 
-    function distribute(uint256 _percentage, address[] _users, int256[] _scores) {
+    function distribute(uint256 _percentage, address[] _users, int256[] _scores) public onlyMinter {
         uint256 scoreSum = 0;
+        // Get total sum of positive scores (dispense negative scores)
         for (uint i = 0; i < _scores.length; i ++) {
             if (_scores[i] > 0) {
-                scoreSum.add(_scores[i]);
+                // because _scores[i] is greater than zero, it is safe to convert to uint256
+                scoreSum.add(uint256(_scores[i]));
             }
         }
+
+        // If any positive score exists, mint new token and distribute to the positive scorers
         if (scoreSum > 0) {
+            // Calculate how many tokens should be given for 1 point
             uint256 unit = inflationUnit().mul(_percentage).div(scoreSum).div(100);
             // TODO Check the possibility to cause the ouf of gas problem here.
             for (i = 0; i < _scores.length; i ++) {

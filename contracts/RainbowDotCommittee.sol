@@ -48,7 +48,7 @@ contract RainbowDotCommittee is Secondary {
         _;
     }
 
-    constructor(address[] _committeeMembers) {
+    constructor(address[] _committeeMembers) public {
         for (uint i = 0; i < _committeeMembers.length; i++) {
             members.add(_committeeMembers[i]);
             memberSize++;
@@ -111,7 +111,6 @@ contract RainbowDotCommittee is Secondary {
                 } else {
                     _disapproveMember(_member);
                 }
-                // emit TODO
             }
         }
     }

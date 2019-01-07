@@ -40,7 +40,7 @@ contract RainbowDotLeague is Secondary {
         rainbowDot.requestLeagueRegistration(address(this), description);
     }
 
-    function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) onlyRainbowDot {
+    function accept(function(address, uint256) external _takeRDot, function(address[] memory, int256[] memory) external _onResult) public onlyRainbowDot {
         takeRDot = _takeRDot;
         onResult = _onResult;
     }
@@ -131,16 +131,16 @@ contract RainbowDotLeague is Secondary {
         forecastId = season.addForecast(forecast);
     }
 
-    function commitValue(string _season, bytes32 _forecastId, uint256 _value, uint _nonce) external {
+    function revealForecast(string _season, bytes32 _forecastId, uint256 _value, uint _nonce) external {
         Season.Object storage season = seasons[_season];
         // Check initialization
         require(season.isInitialized());
         require(season.forecasts[_forecastId].isInitialized());
         // Commit value
-        season.forecasts[_forecastId].commitValue(_value, _nonce);
+        season.forecasts[_forecastId].revealValue(_value, _nonce);
     }
 
-    function commitData(string _season, uint256 _timestamp, uint256 _code, uint256 _value, bytes _signature) public {
+    function submitData(string _season, uint256 _timestamp, uint256 _code, uint256 _value, bytes _signature) public {
         Season.Object storage season = seasons[_season];
         // Check season data
         require(season.code == _code);

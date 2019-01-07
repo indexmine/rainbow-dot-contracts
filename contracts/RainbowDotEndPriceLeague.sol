@@ -5,7 +5,7 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./Oracle.sol";
 import "./RainbowDot.sol";
 import {Season, Forecast} from "./Types.sol";
-import {DateTime} from "../libs/pipermerriam/ethereum-datetime/contracts/DateTime.sol";
+import "ethereum-datetime/contracts/DateTime.sol";
 import "./RainbowDotLeague.sol";
 
 contract RainbowDotEndPriceLeague is DateTime, RainbowDotLeague {
@@ -39,7 +39,7 @@ contract RainbowDotEndPriceLeague is DateTime, RainbowDotLeague {
 
         // Target timestamp can not be greater than the finish time of the season
         // Restrict the Target frame to the end of the day
-        _DateTime targetDate = parseTimestamp(now + _days * 86400);
+        _DateTime memory targetDate = parseTimestamp(now + _days * 86400);
         uint256 targetTimestamp = toTimestamp(
             targetDate.year,
             targetDate.month,
