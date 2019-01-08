@@ -159,7 +159,7 @@ contract RainbowDotLeague is Secondary {
 
     function close(string _season) public {
         Season.Object storage season = seasons[_season];
-        // TODO penalties
+        // TODO penalties for unrevealed forecasts
         // Check initialization
         require(season.isInitialized());
 
@@ -167,5 +167,9 @@ contract RainbowDotLeague is Secondary {
         int256[] memory rScores;
         (users, rScores) = season.calculateResult();
         onResult(users, rScores);
+    }
+
+    // TODO getters
+    function getForecasts() public view returns (bytes32[]) {
     }
 }

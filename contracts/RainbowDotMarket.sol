@@ -60,6 +60,14 @@ contract RainbowDotMarket {
         );
     }
 
+    function registerPublicKey(bytes32 _pubKey) {
+        //
+    }
+
+    function getPubKey(address _user) public view returns (bytes32) {
+
+    }
+
     function cancel(uint256 _itemId) public {
         Item storage item = items[_itemId];
         require(item.buyer == msg.sender);
@@ -77,11 +85,12 @@ contract RainbowDotMarket {
         require(!item.sold);
         item.encryptedValue = _value;
         item.sold = true;
+        // TODO transfer to seller
         emit Complete(item.seller, item.buyer, item.hashedTargetPrice, item.payment);
     }
 
     function fraudProof(uint256 _itemId, bytes _decrypted, bytes _pubKey) public {
-        require(_pubKeyToAddress(_pubKey) == msg.sender);
+//        require(_pubKeyToAddress(_pubKey) == msg.sender);
         Item storage item = items[_itemId];
         bytes memory encryptedValue = _encryptWithPublicKey(_decrypted, _pubKey);
         require(keccak256(encryptedValue) == keccak256(item.encryptedValue));
