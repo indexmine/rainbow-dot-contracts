@@ -115,6 +115,26 @@ contract RainbowDotCommittee is Secondary {
         }
     }
 
+    function getTotalAgenda() public view returns (uint256) {
+        return agendas.length;
+    }
+
+    function getAgenda(uint256 _agendaId) public view returns (
+        string _description,
+        address _target,
+        bool _voted,
+        bool _resolved,
+        bool _result
+    ) {
+        require(agendas.length > _agendaId);
+        Agenda storage agenda = agendas[_agendaId];
+        _description = agenda.description;
+        _target = agenda.target;
+        _voted = agenda.votes.voted[msg.sender];
+        _resolved = agenda.votes.resolved;
+        _result = agenda.votes.result;
+    }
+
     function _majorityVoting(Votes _votes) internal view returns (bool resolved, bool result) {
         require(memberSize > 0);
         resolved = (_votes.up >= memberSize.add(1).div(2) || _votes.down >= memberSize.add(1).div(2));

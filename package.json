@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "devDependencies": {
     "ganache-cli": "^6.1.6",
+    "rlp": "^2.2.2",
     "truffle": "^4.1.13",
     "truffle-hdwallet-provider": "^0.0.5"
   },

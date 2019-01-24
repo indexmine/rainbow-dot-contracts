@@ -3,21 +3,20 @@ const assert = chai.assert
 const BigNumber = web3.BigNumber
 const should = chai.use(require('chai-bignumber')(BigNumber)).should()
 
+const RainbowDotAccount = artifacts.require('RainbowDotAccount')
 const RainbowDotCommittee = artifacts.require('RainbowDotCommittee')
 const RainbowDotLeague = artifacts.require('RainbowDotLeague')
+const WeeklyLeague = artifacts.require('WeeklyLeague')
 const RainbowDot = artifacts.require('RainbowDot')
 
-contract('RainbowDotCommittee', function ([deployer, ...members]) {
-  context('RainbowDotComittee is deployed by the RainbowDot.sol contract',
+contract('RainbowDot', function ([deployer, oracle, user, ...members]) {
+  context('RainbowDot is deployed by an EOA',
     async () => {
-      let committee
+      let rainbowDot
       describe('constructor()', async () => {
         it('will be called by the RainbowDot contract and assign that as its primary',
           async () => {
-            let rainbowDot = await RainbowDot.new(members)
-            let commiteeAddress = await rainbowDot.committee()
-            committee = await RainbowDotCommittee.at(commiteeAddress)
-            assert.equal(rainbowDot.address, await committee.primary())
+            rainbowDot = await RainbowDot.new(members)
           })
       })
     })
@@ -37,69 +36,109 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
         await rainbowDotLeague.register(rainbowDot.address, { from: deployer })
       }
     )
-    describe('submitAgenda()', async () => {
-      it('should emit an event to notify a new agenda has been submitted and increment the agenda', async () => {
-        let agendaId = 0
-        committee.NewAgenda().watch((err, result) => {
-          if (err) assert.fail()
-          else {
-            assert.equal(result.event, 'NewAgenda')
-            assert.equal(agendaId, result.args.agendaId.toNumber())
-            agendaId++
+    describe('join()', async () => {
+      it('should add users into the list', async () => {
+        // Get account manager
+        let accountMangerAddr = await rainbowDot.getAccounts()
+        let accountManager = await RainbowDotAccount.at(accountMangerAddr)
+        let exist
+        // Check that account does not exist
+        exist = await accountManager.exist(user)
+        exist.should.equal(false)
+        // Join
+        await rainbowDot.join({ from: user })
+        // Check that account exists
+        exist = await accountManager.exist(user)
+        exist.should.equal(true)
+      })
+      it('should register only once', async () => {
+        await rainbowDot.join({ from: user })
+        try {
+          await rainbowDot.join({ from: user })
+          assert(false)
+        } catch (e) {
+          e.message.includes('revert').should.equal(true)
+        }
+      })
+    })
+    describe('requestLeagueRegistration()', async () => {
+      it('should submit a new league registration request to the committee', async () => {
+        let league = await RainbowDotLeague.new(oracle, 'Test league')
+        let result = await rainbowDot.requestLeagueRegistration(league.address, 'This is a test request for approval')
+        let agendaId
+        // Find event log from receipt
+        for (let log of result.receipt.logs) {
+          if (log.topics[0] === web3.sha3('NewAgenda(uint256)')) {
+            agendaId = web3.toBigNumber(log.data)
           }
-        })
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 1')
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 2')
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 3')
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 4')
+        }
+        // Get agenda from committee. If it does not exist, this line will be reverted
+        let agenda = await committee.getAgenda(agendaId)
+        // Get address to vote to register as a league
+        let target = agenda[1]
+        // It should be equal with the above address of league what we created here
+        target.should.equal(league.address)
       })
-    })
-    describe('nominate()', async () => {
-      //TODO
-      it('should be called only by the committee members')
-      it('should emit an event to notify a new nomination has been submitted')
-    })
-    describe('vote()', async () => {
-      it('should be called only by the committee members', async () => {
-        // Submit agenda
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda')
-        // Do something when the agenda has been submitted
-        await committee.NewAgenda().watch(async (err, result) => {
-          if (err) assert.fail()
-          let agendaId = result.args.agendaId.toNumber()
-          await committee.vote(agendaId, true, { from: members[0] })
-          try {
-            await committee.vote(agendaId, true, { from: deployer })
-            assert.fail('Should revert')
-          } catch (e) {
-            assert.ok('Reverted successfully')
+      it('should be automatically called by RainbowDotLeague\'s register() method', async () => {
+        let league = await RainbowDotLeague.new(oracle, 'Test league')
+        let result = await league.register(rainbowDot.address)
+        // Find event log from receipt
+        for (let log of result.receipt.logs) {
+          if (log.topics[0] === web3.sha3('NewAgenda(uint256)')) {
+            agendaId = web3.toBigNumber(log.data)
           }
-        })
-      })
-      it('should be registered as an approved league at the RainbowDot when vote result is true', async () => {
-        // Submit agenda
-        await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda')
-        // Do something when the agenda has been submitted
-        committee.NewAgenda().watch(async (err, result) => {
-          // Vote 5 times
-          let agendaId = result.args.agendaId.toNumber()
-          await committee.vote(agendaId, true, { from: members[0] })
-          await committee.vote(agendaId, true, { from: members[1] })
-          await committee.vote(agendaId, true, { from: members[2] })
-          await committee.vote(agendaId, true, { from: members[3] })
-          await committee.vote(agendaId, true, { from: members[4] })
-        })
-        committee.OnResult().watch(async (err, result) => {
-          if (err) assert.fail()
-          assert.equal(result.args.result, true)
-          assert.equal(await rainbowDot.isApprovedLeague(rainbowDotLeague.address), true)
-        })
+        }
+        // Get agenda from committee. If it does not exist, this line will be reverted
+        let agenda = await committee.getAgenda(agendaId)
+        // Get address to vote to register as a league
+        let target = agenda[1]
+        // It should be equal with the above address of league what we created here
+        target.should.equal(league.address)
       })
     })
-    describe('voteForNomination()', async () => {
-      //TODO
-      it('should be called only by the committee members')
-      it('should emit an event to notify a new nomination has been submitted')
+
+    describe('migrateAccountManager()', async () => {
+      it('should migrate account manager', async () => {
+        // Get original account manager
+        let accountMangerAddr = await rainbowDot.getAccounts()
+        let newAccountManager = await RainbowDotAccount.new()
+        let result = await rainbowDot.migrateAccountManager(newAccountManager.address, 'Agendas')
+        // Account manager address should not be changed yet
+        accountMangerAddr.should.equal(await rainbowDot.getAccounts())
+        // Get agenda
+        let agendaId
+        for (let log of result.receipt.logs) {
+          if (log.topics[0] === web3.sha3('NewAgenda(uint256)')) {
+            console.log(web3.toUtf8(log.data[1]))
+          }
+        }
+      })
+    })
+
+    describe.only('newMinterLeague()', async () => {
+      it('will submit a new agenda to the committee', async () => {
+        let weeklyLeague = await WeeklyLeague.new(oracle, 'Weekly')
+        let result = await rainbowDot.newMinterLeague(weeklyLeague.address, 'Weekly league')
+        // Find event log from receipt
+        for (let log of result.receipt.logs) {
+          if (log.topics[0] === web3.sha3('NewAgenda(uint256)')) {
+            agendaId = web3.toBigNumber(log.data)
+          }
+        }
+        // Get agenda from committee. If it does not exist, this line will be reverted
+        let agenda = await committee.getAgenda(agendaId)
+        // Get address to vote to register as a league
+        let target = agenda[1]
+        // It should be equal with the above address of league what we created here
+        target.should.equal(weeklyLeague.address)
+      })
+    })
+
+    describe('getAccounts()', async () => {
+      it('returns account manager')
+    })
+    describe('isApprovedLeague()', async () => {
+      it('should return a given address is an approved league or not')
     })
   })
 })
