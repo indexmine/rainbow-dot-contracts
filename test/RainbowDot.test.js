@@ -115,7 +115,7 @@ contract('RainbowDot', function ([deployer, oracle, user, ...members]) {
       })
     })
 
-    describe.only('newMinterLeague()', async () => {
+    describe('newMinterLeague()', async () => {
       it('will submit a new agenda to the committee', async () => {
         let weeklyLeague = await WeeklyLeague.new(oracle, 'Weekly')
         let result = await rainbowDot.newMinterLeague(weeklyLeague.address, 'Weekly league')
