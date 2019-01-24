@@ -37,7 +37,7 @@ library Season {
         uint256 framesPerPeriod; // how many frames per period
         uint256 timeTolerance;
         address[] userList;
-        Roles.Role users;
+        Roles.Role users; // TODO: mapping(address=>uint256) users; ??
         bytes32[] forecastList;
         mapping(bytes32 => Forecast.Object) forecasts;
         uint256[] usedFrames;
@@ -123,9 +123,14 @@ library Season {
                 forecast.targetFrame.sub(forecast.startFrame).div(_object.secondsPerFrame),
                 forecast.rDots
             );
+            // TODO use mapping instead of list??
+
+            // uint j = users[forecast.user]; // mapping(address=>uint) users;
+            // _rScores[j] = +=rScore
             for (uint j; j < _users.length; j++) {
                 if (_users[j] == forecast.user) {
                     _rScores[j] += rScore;
+                    // TODO _rScores[forecast.user] += rScore;
                 }
             }
         }

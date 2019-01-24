@@ -11,7 +11,7 @@ contract RainbowDotLeague is Secondary {
     using Forecast for Forecast.Object;
     using Season for Season.Object;
 
-    uint256 constant MINIMUM_PERIODS_OF_SEASON = 100;
+    uint256 constant MINIMUM_PERIODS_OF_SEASON = 100; // temporal
 
     Oracle public oracle;
     string description;
@@ -65,7 +65,7 @@ contract RainbowDotLeague is Secondary {
         // TODO code
         if (seasonList.length > 0) {
             Season.Object storage lastSeason = seasons[seasonList[seasonList.length - 1]];
-            require(lastSeason.finishTime > - _startTime);
+            require(lastSeason.finishTime <= _startTime);
         }
 
         // Frame uint should not be zero
@@ -159,7 +159,7 @@ contract RainbowDotLeague is Secondary {
 
     function close(string _season) public {
         Season.Object storage season = seasons[_season];
-        // TODO penalties
+        // TODO penalties for unrevealed forecasts
         // Check initialization
         require(season.isInitialized());
 
@@ -167,5 +167,9 @@ contract RainbowDotLeague is Secondary {
         int256[] memory rScores;
         (users, rScores) = season.calculateResult();
         onResult(users, rScores);
+    }
+
+    // TODO getters
+    function getForecasts() public view returns (bytes32[]) {
     }
 }
