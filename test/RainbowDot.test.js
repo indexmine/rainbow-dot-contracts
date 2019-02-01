@@ -39,7 +39,7 @@ contract('RainbowDot', function ([deployer, oracle, user, ...members]) {
     describe('join()', async () => {
       it('should add users into the list', async () => {
         // Get account manager
-        let accountMangerAddr = await rainbowDot.getAccounts()
+        let accountMangerAddr = await rainbowDot.getAccounts() // TODO getAccountManager
         let accountManager = await RainbowDotAccount.at(accountMangerAddr)
         let exist
         // Check that account does not exist

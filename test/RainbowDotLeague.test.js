@@ -38,24 +38,19 @@ contract('RainbowDotLeague', function ([deployer, ...members]) {
       }
     )
     describe('newSeason()', async () => {
-      it('should start a new season', async () => {
-      })
+      it('should start a new season')
     })
     describe('openForecast()', async () => {
-      it('should start a new season', async () => {
-      })
+      it('should start a new season')
     })
     describe('sealedForecast()', async () => {
-      it('should start a new season', async () => {
-      })
+      it('should start a new season')
     })
     describe('revealForecast()', async () => {
-      it('should start a new season', async () => {
-      })
+      it('should start a new season')
     })
     describe('close()', async () => {
-      it('should start a new season', async () => {
-      })
+      it('should start a new season')
     })
   })
 })
