@@ -8,8 +8,7 @@
 ├── demo
 ├── migrations
 ├── README.md
-├── truffle-config.js
-└── truffle.js
+└── truffle-config.js
 ```
 - *`contracts`*: Smart contract files written in Solidity
 - *`demo`*: Web application client for demo bootstrapped with React/Redux/Drizzle
