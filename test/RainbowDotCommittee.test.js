@@ -1,7 +1,7 @@
 const chai = require('chai')
 const assert = chai.assert
 const BigNumber = web3.BigNumber
-const should = chai.use(require('chai-bignumber')(BigNumber)).should()
+chai.use(require('chai-bignumber')(BigNumber)).should()
 
 const RainbowDotCommittee = artifacts.require('RainbowDotCommittee')
 const RainbowDotLeague = artifacts.require('RainbowDotLeague')
@@ -27,33 +27,30 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
     let committee
     let rainbowDotLeague
     beforeEach(async () => {
-        // Deploy rainbow dot first
-        rainbowDot = await RainbowDot.new(members)
-        // Get committee which is deployed during the RainbowDot contract's deployment
-        let commiteeAddress = await rainbowDot.committee()
-        committee = await RainbowDotCommittee.at(commiteeAddress)
-        // Deploy a new league & register it to the rainbow dot
-        rainbowDotLeague = await RainbowDotLeague.new(deployer, 'Indexmine Cup')
-        await rainbowDotLeague.register(rainbowDot.address, { from: deployer })
-      }
+      // Deploy rainbow dot first
+      rainbowDot = await RainbowDot.new(members)
+      // Get committee which is deployed during the RainbowDot contract's deployment
+      let commiteeAddress = await rainbowDot.committee()
+      committee = await RainbowDotCommittee.at(commiteeAddress)
+      // Deploy a new league & register it to the rainbow dot
+      rainbowDotLeague = await RainbowDotLeague.new(deployer, 'Indexmine Cup')
+      await rainbowDotLeague.register(rainbowDot.address, { from: deployer })
+    }
     )
     describe('submitAgenda()', async () => {
       it('should emit an event to notify a new agenda has been submitted and increment the agenda', async () => {
         let agendaId = 0
         let eventFilter = committee.NewAgenda()
-        await eventFilter.watch((err, result) => {
-          if (err) assert.fail()
-          else {
-            assert.equal(result.event, 'NewAgenda')
-            assert.equal(agendaId, result.args.agendaId.toNumber())
-            agendaId++
-          }
+        await eventFilter.on('data', result => {
+          console.log(result)
+          assert.equal(result.event, 'NewAgenda')
+          assert.equal(agendaId, result.args.agendaId.toNumber())
+          agendaId++
         })
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 1')
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 2')
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 3')
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda 4')
-        eventFilter.stopWatching()
       })
     })
     describe('vote()', async () => {
@@ -62,8 +59,8 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda')
         // Do something when the agenda has been submitted
         let eventFilter = committee.NewAgenda()
-        await eventFilter.watch(async (err, result) => {
-          if (err) assert.fail()
+        await eventFilter.on('data', async (result) => {
+          console.log(result)
           let agendaId = result.args.agendaId.toNumber()
           await committee.vote(agendaId, true, { from: members[0] })
           try {
@@ -73,14 +70,14 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
             assert.ok('Reverted successfully')
           }
         })
-        eventFilter.stopWatching()
       })
       it('should be registered as an approved league at the RainbowDot when vote result is true', async () => {
         // Submit agenda
         await rainbowDot.requestLeagueRegistration(rainbowDotLeague.address, 'test agenda')
-        // Do something when the agenda has been submitted
+        // Do something when the agenda .toPrecision()has been submitted
         let newAgendas = committee.NewAgenda()
-        await newAgendas.watch(async (err, result) => {
+        await newAgendas.on('data', async (result) => {
+          console.log(result)
           // Vote 5 times
           let agendaId = result.args.agendaId.toNumber()
           await committee.vote(agendaId, true, { from: members[0] })
@@ -90,22 +87,20 @@ contract('RainbowDotCommittee', function ([deployer, ...members]) {
           await committee.vote(agendaId, true, { from: members[4] })
         })
         let onResults = committee.OnResult()
-        await onResults.watch(async (err, result) => {
-          if (err) assert.fail()
+        await onResults.on('data', async (result) => {
+          console.log(result)
           assert.equal(result.args.result, true)
           assert.equal(await rainbowDot.isApprovedLeague(rainbowDotLeague.address), true)
         })
-        newAgendas.stopWatching()
-        onResults.stopWatching()
       })
     })
     describe('nominate()', async () => {
-      //TODO
+      // TODO
       it('should be called only by the committee members')
       it('should emit an event to notify a new nomination has been submitted')
     })
     describe('voteForNomination()', async () => {
-      //TODO
+      // TODO
       it('should be called only by the committee members')
       it('should emit an event to notify a new nomination has been submitted')
     })

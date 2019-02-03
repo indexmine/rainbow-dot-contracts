@@ -12,6 +12,6 @@ contract AnnualLeague is MinterLeague, RainbowDotEndPriceLeague {
     }
 
     function mintPercentagePerSeason() public pure returns (uint256){
-       return PERCENTAGE_PER_SEASON;
+        return PERCENTAGE_PER_SEASON;
     }
 }

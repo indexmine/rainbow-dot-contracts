@@ -60,7 +60,7 @@ contract RainbowDotMarket {
         );
     }
 
-    function registerPublicKey(bytes32 _pubKey) {
+    function registerPublicKey(bytes32 _pubKey) public {
         //
     }
 
@@ -90,7 +90,7 @@ contract RainbowDotMarket {
     }
 
     function fraudProof(uint256 _itemId, bytes _decrypted, bytes _pubKey) public {
-//        require(_pubKeyToAddress(_pubKey) == msg.sender);
+        //        require(_pubKeyToAddress(_pubKey) == msg.sender);
         Item storage item = items[_itemId];
         bytes memory encryptedValue = _encryptWithPublicKey(_decrypted, _pubKey);
         require(keccak256(encryptedValue) == keccak256(item.encryptedValue));

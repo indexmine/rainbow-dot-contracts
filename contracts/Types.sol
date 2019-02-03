@@ -67,13 +67,15 @@ library Season {
     }
 
     function addForecast(Object storage _object, Forecast.Object _forecast) internal returns (bytes32 forecastId) {
-        forecastId = keccak256(abi.encodePacked(
+        forecastId = keccak256(
+            abi.encodePacked(
                 _forecast.user,
                 _forecast.code,
                 _forecast.rDots,
                 _forecast.startFrame,
                 _forecast.targetFrame,
-                _forecast.hashedTargetPrice)
+                _forecast.hashedTargetPrice
+            )
         );
 
         // Unique forecast id
