@@ -1,0 +1,64 @@
+language: node_js
+node_js:
+- "stable"
+
+install:
+- npm install -g truffle
+- npm install -g ganache-cli
+- npm install -g coveralls
+- npm install
+
+script:
+- npm run test
+
+after_success:
+- export CURRENT_VERSION=$(node -p "require('./package.json').version")
+- export LATEST=$(npm view $(node -p "require('./package.json').name") dist-tags.latest)
+- export NEXT=$(npm view $(node -p "require('./package.json').name") dist-tags.next)
+- npm run coverage && cat coverage/lcov.info | coveralls
+
+before_deploy:
+- if [ "$LATEST" != "$CURRENT_VERSION" ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+  echo "on master branch";
+  export TRAVIS_TAG=v$CURRENT_VERSION;
+  fi;
+- if [ "$NEXT" != "$CURRENT_VERSION" ] && [ "$TRAVIS_BRANCH" = "develop" ]; then
+  echo "on develop branch";
+  export TRAVIS_TAG=v$CURRENT_VERSION-next;
+  fi;
+
+
+deploy:
+- provider: npm
+  email: info@indexmine.com
+  api_key:
+    secure: whfxj20u9nf+62ebhjwj9qqri/htxz+nvxi+eevfrcl1go5w3mq4aa85b1t05fmikyyojszrrwps3mluj/a2uymncrlbifyixbuq8vubhoboop96d+l0qrmfcakpysigwcjh3dlbriihn0ig1iqsbsgubobqbsnm6ziaoiwfpwfitvnt19lvie8vhxrakthl4btylumvnvjhooubqgcck8i7o7pqfw6+8nyc3ghomlxk2hwxags41rjvi+gamz074oo3j3dp5kv2fhgsbo0yfv/il3ggibh7d7ruiuijecqjbrkeojyy1i4twcwpdsliyc5e4yignwakkdmxjghhkjwwqarhffh6rb/b1kythsxyckdzcfowuw/q6x/lqsgdmn9o05xtlq+uoprdqft1fjthzoribtrmwsgpdj6yj9wknn4yie0ixtpntkc3kjuh6h5hzadaixeaa+ujvugdvyx8aq5mwokwf2+jgyptkyhmn1o5czh8xr+5aqaedmyd0rctsfxfcnravtasejmr/rn3t/h1yofaz1kll1z6gyuf1dpiitjdqvite0z1a0aiff9hfyaojqhg+kv2yyrickd7+p9eiryrnhlnc8++v+7h9bmbijzugm5mtzefs5c3zb8ulcdp6xj7cd5izxcqpupybji9sgnfvjblsaj1klq=
+  tag: next
+  on:
+    condition: $next != $current_version
+    branch: develop
+    repo: indexmine/rainbow-dot-contracts
+- provider: npm
+  email: info@indexmine.com
+  api_key:
+    secure: whfxj20u9nf+62ebhjwj9qqri/htxz+nvxi+eevfrcl1go5w3mq4aa85b1t05fmikyyojszrrwps3mluj/a2uymncrlbifyixbuq8vubhoboop96d+l0qrmfcakpysigwcjh3dlbriihn0ig1iqsbsgubobqbsnm6ziaoiwfpwfitvnt19lvie8vhxrakthl4btylumvnvjhooubqgcck8i7o7pqfw6+8nyc3ghomlxk2hwxags41rjvi+gamz074oo3j3dp5kv2fhgsbo0yfv/il3ggibh7d7ruiuijecqjbrkeojyy1i4twcwpdsliyc5e4yignwakkdmxjghhkjwwqarhffh6rb/b1kythsxyckdzcfowuw/q6x/lqsgdmn9o05xtlq+uoprdqft1fjthzoribtrmwsgpdj6yj9wknn4yie0ixtpntkc3kjuh6h5hzadaixeaa+ujvugdvyx8aq5mwokwf2+jgyptkyhmn1o5czh8xr+5aqaedmyd0rctsfxfcnravtasejmr/rn3t/h1yofaz1kll1z6gyuf1dpiitjdqvite0z1a0aiff9hfyaojqhg+kv2yyrickd7+p9eiryrnhlnc8++v+7h9bmbijzugm5mtzefs5c3zb8ulcdp6xj7cd5izxcqpupybji9sgnfvjblsaj1klq=
+  tag: latest
+  on:
+    condition: $latest != $current_version
+    branch: master
+    repo: indexmine/rainbow-dot-contracts
+- provider: releases
+  api_key:
+    secure: qv/zs6x8amyl6wib08mcbpkcfgxy97gdscznzvjecar12gnpqjejf24sw9wth+3ogfkkc5+q3doa+rwhsjovht8eriz6nflzndxtoqr0xx2cdpl5st45/fwo8pilzgrxhx5b52p5a2grcileev2rx6vi1pw51jszy68g6lul+vqdooa/t/nzrh6a+eqgxa27xcmunngy5tnikckjwoecujsh9u15vclxqgs7zz2mg9/4i0hxb3bewjxmwausllqphxlcg1iwjeik8pfsyreoozsqnccgw9lrfsqlqe3pb3qjbz81wejocjh9tk9craxrql29545s9xaxmocxled7kfrx5ikas3qtlyxq62s5xqxwt6nhn34gou0vgogo2tcptgdjyzxtie42jlddxf9ucwwkzyhitdgl1ixtztzu/lat0yud1tnexzuzcjeuk/tzvcmgcd8usluod3okxstgqjbvypslcdzhyhpnpwluu3qlf41jde1zdnfycsmvmqbh4tjqad3eg2u867ycy/kbo2ew0d7ixvznrppfhhxi3i1yxyx5aqlcjnzkueuxr5gh8+6er91wg4+yy44f5m+dv/jytyce8al2clazzatuemqz23hm7atjvkqj7njcc9aucxd5w7cpipv4bbumg1iwpopihyjwejnq+55c5sgobz4=
+  on:
+    tags: true
+    repo: indexmine/rainbow-dot-contracts
+    branch: master
+- provider: releases
+  prerelease: true
+  api_key:
+    secure: qv/zs6x8amyl6wib08mcbpkcfgxy97gdscznzvjecar12gnpqjejf24sw9wth+3ogfkkc5+q3doa+rwhsjovht8eriz6nflzndxtoqr0xx2cdpl5st45/fwo8pilzgrxhx5b52p5a2grcileev2rx6vi1pw51jszy68g6lul+vqdooa/t/nzrh6a+eqgxa27xcmunngy5tnikckjwoecujsh9u15vclxqgs7zz2mg9/4i0hxb3bewjxmwausllqphxlcg1iwjeik8pfsyreoozsqnccgw9lrfsqlqe3pb3qjbz81wejocjh9tk9craxrql29545s9xaxmocxled7kfrx5ikas3qtlyxq62s5xqxwt6nhn34gou0vgogo2tcptgdjyzxtie42jlddxf9ucwwkzyhitdgl1ixtztzu/lat0yud1tnexzuzcjeuk/tzvcmgcd8usluod3okxstgqjbvypslcdzhyhpnpwluu3qlf41jde1zdnfycsmvmqbh4tjqad3eg2u867ycy/kbo2ew0d7ixvznrppfhhxi3i1yxyx5aqlcjnzkueuxr5gh8+6er91wg4+yy44f5m+dv/jytyce8al2clazzatuemqz23hm7atjvkqj7njcc9aucxd5w7cpipv4bbumg1iwpopihyjwejnq+55c5sgobz4=
+  on:
+    tags: true
+    repo: indexmine/rainbow-dot-contracts
+    branch: develop
