@@ -18,10 +18,10 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
 
     constructor () public Secondary() {
         _startedTime = now;
-        gradingStandards = new int256[](6);
     }
 
     function addUser(address _user) public onlyPrimary {
+        require(!users.has(_user));
         users.add(_user);
         userList.push(_user);
         Account memory account;
@@ -66,13 +66,6 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         }
     }
 
-    function updateGradingStandard(int256[] memory _standards) public onlyPrimary {
-        require(_standards.length == 6);
-        for (uint i = 0; i < _standards.length; i++) {
-            gradingStandards[i] = _standards[i];
-        }
-    }
-
     function exist(address _user) public view returns (bool) {
         return users.has(_user);
     }
@@ -83,7 +76,7 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         uint256 lastUse,
         Grade grade)
     {
-        require(!users.has(_user));
+        require(users.has(_user));
         Account memory account = accounts[_user];
         rDots = getAvailableRDots(_user);
         rScore = getCurrentSeasonScore(_user);
@@ -129,18 +122,19 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         return now.sub(_startedTime).div(7776000).add(1);
     }
 
+    // temporal set grade
     function _calculateGrade(int256 _rScore) private view returns (Grade) {
-        if (_rScore < gradingStandards[0]) {
+        if (_rScore <= 3) {
             return Grade.PURPLE;
-        } else if (_rScore < gradingStandards[1]) {
+        } else if (3 < _rScore && _rScore <= 10) {
             return Grade.NAVY;
-        } else if (_rScore < gradingStandards[2]) {
+        } else if (10 < _rScore && _rScore <= 1000) {
             return Grade.BLUE;
-        } else if (_rScore < gradingStandards[3]) {
+        } else if (1000 < _rScore && _rScore <= 2000) {
             return Grade.GREEN;
-        } else if (_rScore < gradingStandards[4]) {
+        } else if (2000 < _rScore && _rScore <= 5000) {
             return Grade.ORANGE;
-        } else if (_rScore < gradingStandards[5]) {
+        } else if (5000 < _rScore && _rScore <= 10000) {
             return Grade.YELLOW;
         } else {
             return Grade.RED;

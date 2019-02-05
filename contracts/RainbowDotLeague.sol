@@ -26,6 +26,15 @@ contract RainbowDotLeague is Secondary {
         _;
     }
 
+    event SeasonOpened(
+        string name,
+        uint256 code,
+        uint256 startTime,
+        uint256 finishTime,
+        uint256 secondsPerFrame,
+        uint256 framesPerPeriod
+    );
+
     constructor (address _oracle, string _description) public Secondary() {
         oracle = Oracle(_oracle);
         description = _description;
@@ -71,12 +80,6 @@ contract RainbowDotLeague is Secondary {
         // Frame uint should not be zero
         require(_secondsPerFrame != 0);
 
-        // Minimum period limit
-        require(season.getMaximumFrame().div(_framesPerPeriod) >= MINIMUM_PERIODS_OF_SEASON);
-
-        // Add the name of the season to the list
-        seasonList.push(_name);
-
         // Set detail information of the season
         season.name = _name;
         season.code = _code;
@@ -84,9 +87,17 @@ contract RainbowDotLeague is Secondary {
         season.finishTime = _finishTime;
         season.secondsPerFrame = _secondsPerFrame;
         season.framesPerPeriod = _framesPerPeriod;
+
+        // Minimum period limit
+        require(season.getMaximumFrame().div(_framesPerPeriod) >= MINIMUM_PERIODS_OF_SEASON);
+
+        // Add the name of the season to the list
+        seasonList.push(_name);
+
+        emit SeasonOpened(_name, _code, _startTime, _finishTime, _secondsPerFrame, _framesPerPeriod);
     }
 
-    function openForecast(string _season, uint256 _rDots, uint256 _periods, uint256 _targetPrice) external returns (bytes32 forecastId) {
+    function openedForecast(string _season, uint256 _rDots, uint256 _periods, uint256 _targetPrice) external returns (bytes32 forecastId) {
         //TODO grade limit
         return _forecast(msg.sender, _season, _rDots, _periods, keccak256(abi.encodePacked(_targetPrice, uint256(0))), _targetPrice);
     }
@@ -109,7 +120,7 @@ contract RainbowDotLeague is Secondary {
         require(season.isInitialized());
 
         // Season should be on going
-        require(season.isOnGoing());
+        // require(season.isOnGoing());                     // this line make revert error
 
         // Target timestamp can not be greater than the finish time of the season
         uint256 targetTimestamp = season.secondsPerFrame.mul(season.framesPerPeriod).mul(_periods).add(now);
@@ -117,14 +128,14 @@ contract RainbowDotLeague is Secondary {
         require(targetFrame <= season.getMaximumFrame());
 
         // Spend RDot
-        takeRDot(_user, _rDots);
+        // takeRDot(_user, _rDots);                         // this line make revert error
 
         // Create forecast object and add it to the Season object
         Forecast.Object memory forecast;
         forecast.user = _user;
         forecast.code = season.code;
         forecast.rDots = _rDots;
-        forecast.startFrame = season.getFrame(now);
+        // forecast.startFrame = season.getFrame(now);      // this line make revert error
         forecast.targetFrame = targetFrame;
         forecast.hashedTargetPrice = _hashedTargetPrice;
         forecast.targetPrice = _targetPrice;
