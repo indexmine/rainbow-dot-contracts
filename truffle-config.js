@@ -17,6 +17,6 @@ module.exports = {
     }
   },
   plugins: [
-    // 'truffle-plugin-modularizer'
+    'truffle-plugin-modularizer'
   ]
 }
