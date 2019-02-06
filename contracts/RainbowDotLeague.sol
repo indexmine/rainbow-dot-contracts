@@ -120,7 +120,7 @@ contract RainbowDotLeague is Secondary {
         require(season.isInitialized());
 
         // Season should be on going
-        // require(season.isOnGoing());                     // this line make revert error
+        require(season.isOnGoing());
 
         // Target timestamp can not be greater than the finish time of the season
         uint256 targetTimestamp = season.secondsPerFrame.mul(season.framesPerPeriod).mul(_periods).add(now);
@@ -128,14 +128,14 @@ contract RainbowDotLeague is Secondary {
         require(targetFrame <= season.getMaximumFrame());
 
         // Spend RDot
-        // takeRDot(_user, _rDots);                         // this line make revert error
+        takeRDot(_user, _rDots);
 
         // Create forecast object and add it to the Season object
         Forecast.Object memory forecast;
         forecast.user = _user;
         forecast.code = season.code;
         forecast.rDots = _rDots;
-        // forecast.startFrame = season.getFrame(now);      // this line make revert error
+        forecast.startFrame = season.getFrame(now);
         forecast.targetFrame = targetFrame;
         forecast.hashedTargetPrice = _hashedTargetPrice;
         forecast.targetPrice = _targetPrice;
