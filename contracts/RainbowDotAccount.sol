@@ -24,10 +24,8 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
         require(!users.has(_user));
         users.add(_user);
         userList.push(_user);
-        Account memory account;
-        account.rDots = INITIAL_SUPPLY;
-        account.lastUse = now;
-        accounts[_user] = account;
+        accounts[_user].rDots = INITIAL_SUPPLY;
+        accounts[_user].lastUse = now;
     }
 
     function useRDots(address _user, uint256 _rDots) public onlyPrimary {

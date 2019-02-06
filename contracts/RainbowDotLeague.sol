@@ -35,9 +35,15 @@ contract RainbowDotLeague is Secondary {
         uint256 framesPerPeriod
     );
 
+    event EventForecastId(bytes32 forecastId);
+
     constructor (address _oracle, string _description) public Secondary() {
         oracle = Oracle(_oracle);
         description = _description;
+    }
+
+    function revertMaker() public {
+        require(msg.sender == 0);
     }
 
     function register(address _rainbowDot) public onlyPrimary {
@@ -102,9 +108,11 @@ contract RainbowDotLeague is Secondary {
         return _forecast(msg.sender, _season, _rDots, _periods, keccak256(abi.encodePacked(_targetPrice, uint256(0))), _targetPrice);
     }
 
-    function sealedForecast(string _season, uint256 _rDots, uint256 _periods, bytes32 _targetPrice) external returns (bytes32 forecastId){
+    function sealedForecast(string _season, uint256 _rDots, uint256 _periods, bytes32 _targetPrice) external returns (bytes32 forecastId) {
         // TODO grade limit
-        return _forecast(msg.sender, _season, _rDots, _periods, _targetPrice, 0);
+        bytes32 _forecastId = _forecast(msg.sender, _season, _rDots, _periods, _targetPrice, 0);
+        emit EventForecastId(_forecastId);
+        forecastId = _forecastId;
     }
 
     function _forecast(
