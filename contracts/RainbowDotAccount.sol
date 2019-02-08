@@ -18,14 +18,17 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
 
     constructor () public Secondary() {
         _startedTime = now;
+        gradingStandards = new int256[](6);
     }
 
     function addUser(address _user) public onlyPrimary {
         require(!users.has(_user));
         users.add(_user);
         userList.push(_user);
-        accounts[_user].rDots = INITIAL_SUPPLY;
-        accounts[_user].lastUse = now;
+        Account memory account;
+        account.rDots = INITIAL_SUPPLY;
+        account.lastUse = now;
+        accounts[_user] = account;
     }
 
     function useRDots(address _user, uint256 _rDots) public onlyPrimary {
@@ -61,6 +64,13 @@ contract RainbowDotAccount is DateTime, IRainbowDotAccount {
             //            gradingStandards = _gradingStandards;
             // Set last season
             _lastSeasonNumber = _getCurrentSeasonNumber() - 1;
+        }
+    }
+
+    function updateGradingStandard(int256[] memory _standards) public onlyPrimary {
+        require(_standards.length == 6);
+        for (uint i = 0; i < _standards.length; i++) {
+            gradingStandards[i] = _standards[i];
         }
     }
 

@@ -55,6 +55,9 @@ contract('RainbowDotLeague', function ([deployer, oracle, user, ...members]) {
         await committee.vote(0, true, { from: members[i] })
       }
 
+      let isApproved = await rainbowDot.isApprovedLeague(rainbowDotLeague.address)
+      console.log('isApproved? : ', isApproved)
+
       await rainbowDotLeague.newSeason(seasonName, code, currentTime + 10, currentTime + 30000, 10, 2, { from: deployer })
     })
     describe('waiting for season start', async () => {
@@ -67,9 +70,6 @@ contract('RainbowDotLeague', function ([deployer, oracle, user, ...members]) {
     })
     describe('openedForecast()', async () => {
       it('should register opened forecast', async () => {
-        // let isApproved = await rainbowDot.isApprovedLeague(rainbowDotLeague.address)
-        // console.log('isApproved? : ', isApproved)
-
         await rainbowDotLeague.openedForecast(seasonName, 1, 100, 23000, { from: user })
       })
     })
