@@ -7,7 +7,7 @@ const RainbowDotLeague = artifacts.require('RainbowDotLeague')
 const RainbowDot = artifacts.require('RainbowDot')
 
 contract('RainbowDotLeague', function ([deployer, oracle, user, ...members]) {
-  context('When a league is once deployed successfully', async () => {
+  context.only('When a league is once deployed successfully', async () => {
     let rainbowDot
     let committee
     let rainbowDotLeague
@@ -15,7 +15,8 @@ contract('RainbowDotLeague', function ([deployer, oracle, user, ...members]) {
     let code = 1
     let seasonName = 'testSeason'
     let agendaId
-    let forecastId
+    let sealedForecastId
+    let sealedForecast
 
     before(async () => {
       // Deploy rainbow dot first
@@ -66,32 +67,39 @@ contract('RainbowDotLeague', function ([deployer, oracle, user, ...members]) {
     })
     describe('openedForecast()', async () => {
       it('should register opened forecast', async () => {
-        let isApproved = await rainbowDot.isApprovedLeague(rainbowDotLeague.address)
-        console.log('isApproved? : ', isApproved)
+        // let isApproved = await rainbowDot.isApprovedLeague(rainbowDotLeague.address)
+        // console.log('isApproved? : ', isApproved)
 
-        await rainbowDotLeague.openedForecast(seasonName, 1, 100, 35000, { from: user })
+        await rainbowDotLeague.openedForecast(seasonName, 1, 100, 23000, { from: user })
       })
     })
     describe('sealedForecast()', async () => {
       it('should register sealed forecast', async () => {
-        let isApproved = await rainbowDot.isApprovedLeague(rainbowDotLeague.address)
-        console.log('isApproved? : ', isApproved)
-
         let bytesTargetPrice = web3.utils.soliditySha3(35000, 0)
 
-        await rainbowDotLeague.sealedForecast(seasonName, 1, 100, bytesTargetPrice, { from: user })
+        sealedForecast = await rainbowDotLeague.sealedForecast(seasonName, 1, 100, bytesTargetPrice, { from: user })
+        sealedForecastId = sealedForecast.logs[0].args.forecastId
       })
     })
     describe('revealForecast()', async () => {
       it('should reveal sealed forecast', async () => {
-        let bytesTargetPrice = web3.utils.soliditySha3(35000, 0)
+        console.log('sealed forecast id : ', sealedForecastId)
 
-        let sealedForecastId = await rainbowDotLeague.sealedForecast(seasonName, 1, 100, bytesTargetPrice, { from: user })
+        await rainbowDotLeague.revealForecast(seasonName, sealedForecastId, 35000, 0)
+      })
+    })
+    describe('getForecasts()', async () => {
+      it('should get forecast list', async () => {
+        let forecastList = await rainbowDotLeague.getForecasts(seasonName)
 
-        forecastId = sealedForecastId.logs[0].args.forecastId
-        console.log('sealed forecast id : ', forecastId)
+        console.log('forecast list : ', forecastList)
+      })
+    })
+    describe('getForecast()', async () => {
+      it('should get forecast info', async () => {
+        let forecastInfo = await rainbowDotLeague.getForecast(seasonName, sealedForecastId)
 
-        await rainbowDotLeague.revealForecast(seasonName, forecastId, 35000, 0)
+        console.log('forecast info : ', forecastInfo)
       })
     })
     describe('close()', async () => {

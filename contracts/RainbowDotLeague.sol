@@ -189,6 +189,33 @@ contract RainbowDotLeague is Secondary {
     }
 
     // TODO getters
-    function getForecasts() public view returns (bytes32[]) {
+    function getForecasts(string _season) public view returns (bytes32[] memory) {
+        Season.Object storage season = seasons[_season];
+        require(abi.encodePacked(season.name).length != 0);
+        return season.forecastList;
+    }
+    // TODO getters
+    function getForecast(string _season, bytes32 _forecastId) public view returns (
+        address _user,
+        uint256 _code,
+        uint256 _rDots,
+        uint256 _startFrame,
+        uint256 _targetFrame,
+        bytes32 _hashedTargetPrice,
+        uint256 _targetPrice
+    ) {
+        Season.Object storage season = seasons[_season];
+        require(abi.encodePacked(season.name).length != 0);
+
+        Forecast.Object memory forecast = season.forecasts[_forecastId];
+        require(abi.encodePacked(forecast.user).length != 0);
+
+        _user = forecast.user;
+        _code = forecast.code;
+        _rDots = forecast.rDots;
+        _startFrame = forecast.startFrame;
+        _targetFrame = forecast.targetFrame;
+        _hashedTargetPrice = forecast.hashedTargetPrice;
+        _targetPrice = forecast.targetPrice;
     }
 }
